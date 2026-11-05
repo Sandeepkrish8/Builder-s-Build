@@ -21,6 +21,9 @@ const shots = [
   await page.goto(`${BASE}/index.html`, { waitUntil: "networkidle" });
   await page.waitForTimeout(1500);
   for (const [sel, file] of shots) {
+    // 3D scenes only animate while on screen, so scroll first and let the build play
+    await page.locator(sel).scrollIntoViewIfNeeded();
+    await page.waitForTimeout(["#projects", "#progress"].includes(sel) ? 6000 : 400);
     await page.locator(sel).screenshot({ path: path.join(OUT, file) });
     console.log("saved", file);
   }

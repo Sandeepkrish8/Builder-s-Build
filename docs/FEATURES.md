@@ -13,6 +13,7 @@ This plan is for a front-end-only showcase website for a construction company th
 | 5 | Construction progress tracker | ![](previews/05-construction-tracker.png) |
 | 6 | Testimonials and site-visit booking | ![](previews/06-site-visit-booking.png) |
 | 7 | Mobile view | ![](previews/07-mobile-view.png) |
+| 8 | Animated 3D construction build (video) | ![](previews/construction-build.gif) · [MP4](previews/construction-build.mp4) |
 
 To try the working mockup (you can drag the 3D model, click a floor, and move the EMI sliders):
 
@@ -37,7 +38,7 @@ Then open http://localhost:8080.
 ### Should-have (shows you think like a product engineer)
 7. **Home loan EMI calculator.** Live sliders and a donut chart showing the principal/interest split.
 8. **House construction cost estimator.** Built-up area combined with a quality tier (Standard, Premium or Luxury) gives a cost breakdown.
-9. **Construction progress tracker.** A milestone timeline, dated site photos and a "live camera" or 360° tour card.
+9. **Construction progress tracker with an animated 3D site.** The building rises floor by floor (foundation, frame, scaffolding, masonry, finishing, handover) with a working crane, excavator and workers. Clicking a timeline milestone or dragging the time slider moves the 3D model to that stage. A smaller auto-playing version appears on the "Under construction" project card. The code is in `mockups/construction.js`, and there's a full-screen demo at `mockups/construction.html`.
 10. **Testimonials and trust badges.** RERA, ISO, Google rating and on-time delivery rate.
 11. **Day/Night toggle in the 3D scene.** Optionally, add an amenities overlay too (pool, clubhouse, park).
 

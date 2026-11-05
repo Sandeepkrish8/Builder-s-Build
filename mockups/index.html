@@ -64,7 +64,7 @@
   </div>
   <div class="cards">
     <article class="card">
-      <div class="card-media" data-art='{"towers":3,"crane":true,"seed":3}'><span class="status ongoing">● Under construction</span><span class="fav">♡</span></div>
+      <div class="card-media site3d-card"><canvas id="cardSite" aria-label="Animated 3D model of the building under construction"></canvas><span class="status ongoing">● Under construction</span><span class="fav">♡</span><span class="badge-3d">3D</span></div>
       <div class="card-body">
         <h3>Urbanstone Skyline</h3><div class="loc">📍 Whitefield, Bengaluru</div>
         <div class="specs"><span class="spec">2 & 3 BHK</span><span class="spec">1,150–1,820 sq ft</span><span class="spec">3 Towers</span></div>
@@ -215,22 +215,28 @@
 <section class="section" id="progress" style="padding-top:24px">
   <div class="section-head">
     <div><h2>Watch your home rise — week by week.</h2></div>
-    <p>Milestones, dated site photos and a live camera build trust with buyers and reduce "what's the status?" calls to the sales team.</p>
+    <p>Milestones, dated site photos and an animated 3D model build trust with buyers and reduce "what's the status?" calls to the sales team.</p>
   </div>
   <div class="prog-grid">
     <div class="timeline">
       <div class="overall"><div><small>Overall</small><b>68%</b></div><div><small>Possession</small><b>Dec 2027</b></div><div><small>Last update</small><b>2 days</b></div></div>
-      <div class="tl-item done"><div class="tl-dot">✓</div><div><h3>Land & approvals</h3><p>RERA, BBMP plan sanction, environment clearance</p></div><span class="when">Jan 2025</span></div>
-      <div class="tl-item done"><div class="tl-dot">✓</div><div><h3>Foundation & basement</h3><p>Raft foundation, 2 basement parking levels</p></div><span class="when">Jun 2025</span></div>
-      <div class="tl-item done"><div class="tl-dot">✓</div><div><h3>Superstructure</h3><p>All 14 slabs cast in Tower B</p></div><span class="when">Aug 2026</span></div>
-      <div class="tl-item now"><div class="tl-dot">4</div><div><h3>Masonry & MEP · in progress</h3><p>Blockwork 80%, plumbing 55%, electrical 40%</p></div><span class="when">Now</span></div>
-      <div class="tl-item next"><div class="tl-dot">5</div><div><h3>Finishing & amenities</h3><p>Flooring, paint, clubhouse, landscaping</p></div><span class="when">Q2 2027</span></div>
-      <div class="tl-item next"><div class="tl-dot">6</div><div><h3>Handover</h3><p>Occupancy certificate & key handover</p></div><span class="when">Dec 2027</span></div>
+      <div tabindex="0" role="button" data-p="0.08" class="tl-item done"><div class="tl-dot">✓</div><div><h3>Land & approvals</h3><p>RERA, BBMP plan sanction, environment clearance</p></div><span class="when">Jan 2025</span></div>
+      <div tabindex="0" role="button" data-p="0.22" class="tl-item done"><div class="tl-dot">✓</div><div><h3>Foundation & basement</h3><p>Raft foundation, 2 basement parking levels</p></div><span class="when">Jun 2025</span></div>
+      <div tabindex="0" role="button" data-p="0.70" class="tl-item done"><div class="tl-dot">✓</div><div><h3>Superstructure</h3><p>All 14 slabs cast in Tower B</p></div><span class="when">Aug 2026</span></div>
+      <div tabindex="0" role="button" data-p="0.84" class="tl-item now"><div class="tl-dot">4</div><div><h3>Masonry & MEP · in progress</h3><p>Blockwork 80%, plumbing 55%, electrical 40%</p></div><span class="when">Now</span></div>
+      <div tabindex="0" role="button" data-p="0.95" class="tl-item next"><div class="tl-dot">5</div><div><h3>Finishing & amenities</h3><p>Flooring, paint, clubhouse, landscaping</p></div><span class="when">Q2 2027</span></div>
+      <div tabindex="0" role="button" data-p="1" class="tl-item next"><div class="tl-dot">6</div><div><h3>Handover</h3><p>Occupancy certificate & key handover</p></div><span class="when">Dec 2027</span></div>
     </div>
     <div class="media-col">
-      <div class="live" data-art='{"towers":3,"crane":true,"sky":["#d9c7a8","#8fa9c4"],"seed":5}'>
-        <span class="live-tag">LIVE · Site Camera 2</span>
-        <div class="live-cap"><div><b>Urbanstone Skyline — Tower B</b><small>Updated 4 Nov 2026 · 10:42 AM</small></div><a class="btn btn-gold" style="padding:10px 16px;font-size:13px">Open 360° tour</a></div>
+      <div class="site3d">
+        <canvas id="site3d" aria-label="Interactive 3D construction model of Tower B"></canvas>
+        <span class="site-tag">3D construction model · Tower B</span>
+        <div class="site-stage"><small>Showing stage</small><b id="stageName">Masonry & MEP</b><span id="stagePct">Stage 4 of 6</span></div>
+        <div class="site-controls">
+          <button class="replay" id="replay" type="button">↻ Replay build</button>
+          <label class="scrub"><span>Drag to travel through time</span><input id="scrub" type="range" min="0" max="100" value="84"/></label>
+          <span class="site-hint">Drag to rotate · Scroll to zoom</span>
+        </div>
       </div>
       <div class="thumbs">
         <div class="thumb" data-art='{"towers":1,"crane":true,"seed":21}'><span>Oct 2026</span></div>
@@ -278,6 +284,7 @@
 <script type="module">
   import { mountScene } from "./scene.js";
   import { buildingArt } from "./art.js";
+  import { mountConstruction, stageFor, STAGES } from "./construction.js";
 
   // Illustrations
   document.querySelectorAll("[data-art]").forEach((el) => {
@@ -327,6 +334,26 @@
   }
   ["amt", "rate", "yrs"].forEach((id) => $(id).addEventListener("input", calc));
   calc();
+
+  // Animated 3D construction site: small one in the project card, interactive one in the tracker
+  mountConstruction($("cardSite"), { progress: 0.84, interactive: false, radius: 36 });
+  const site = mountConstruction($("site3d"), { progress: 0.84 });
+  const items = [...document.querySelectorAll(".tl-item[data-p]")];
+  site.onProgress((p) => {
+    const stage = stageFor(p);
+    $("stageName").textContent = stage.name;
+    $("stagePct").textContent = `Stage ${STAGES.indexOf(stageFor(p)) + 1} of 6`;
+    if (document.activeElement !== $("scrub")) $("scrub").value = Math.round(p * 100);
+    paint($("scrub"));
+    items.forEach((el) => el.classList.toggle("viewing", stageFor(+el.dataset.p).name === stage.name));
+  });
+  items.forEach((el) => {
+    const go = () => site.setProgress(+el.dataset.p);
+    el.addEventListener("click", go);
+    el.addEventListener("keydown", (e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), go()));
+  });
+  $("scrub").addEventListener("input", (e) => site.jump(e.target.value / 100));
+  $("replay").addEventListener("click", () => site.replay());
 </script>
 </body>
 </html>

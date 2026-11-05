@@ -1,0 +1,428 @@
+// Animated 3D construction site (Three.js).
+// The building rises floor by floor, driven by a "progress" value from 0 to 1:
+//   0.00  land & site marking    0.12  foundation      0.25-0.70  superstructure
+//   0.72  masonry walls          0.88  glass/finishing 0.97       handover
+// Call setProgress(p) to animate to any stage (the timeline and slider use this).
+import * as THREE from "./vendor/three.module.min.js";
+
+export const STAGES = [
+  { p: 0.08, name: "Land & approvals" },
+  { p: 0.22, name: "Foundation & basement" },
+  { p: 0.70, name: "Superstructure" },
+  { p: 0.84, name: "Masonry & MEP" },
+  { p: 0.95, name: "Finishing & amenities" },
+  { p: 1.00, name: "Handover" },
+];
+
+export function stageFor(p) {
+  if (p < 0.12) return STAGES[0];
+  if (p < 0.25) return STAGES[1];
+  if (p < 0.72) return STAGES[2];
+  if (p < 0.88) return STAGES[3];
+  if (p < 0.975) return STAGES[4];
+  return STAGES[5];
+}
+
+export function mountConstruction(canvas, { progress = 0.84, interactive = true, speed = 0.22, radius: startRadius = 46 } = {}) {
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 200);
+
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7a66, 1.1));
+  const sun = new THREE.DirectionalLight(0xfff1dc, 2.4);
+  sun.position.set(12, 22, 9);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  Object.assign(sun.shadow.camera, { left: -16, right: 16, top: 16, bottom: -16, near: 1, far: 60 });
+  sun.shadow.bias = -0.0005;
+  scene.add(sun);
+
+  // ---------- materials ----------
+  const M = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...extra });
+  const raw = new THREE.Color(0xb9b4ab), painted = new THREE.Color(0xf1ece4);
+  const concrete = M(0xb9b4ab);
+  const slabMat = M(0xc9c4bb);
+  const baseSide = M(0xd3cdc2);
+  const sand = M(0xd9c6a0, { roughness: 1 });
+  const block = M(0xa8927a);
+  const glass = M(0x6d93bd, { roughness: 0.15, metalness: 0.5 });
+  const scaffoldPost = M(0xe8a33a, { roughness: 0.5, metalness: 0.3 });
+  const scaffoldRail = M(0xd4572a, { roughness: 0.5, metalness: 0.3 });
+  const plank = M(0x9c7a4f);
+  const steel = M(0x3a3f47, { roughness: 0.5, metalness: 0.6 });
+  const yellow = M(0xf2b134, { roughness: 0.55 });
+  const red = M(0xd2452f, { roughness: 0.55 });
+  const dark = M(0x2a2f36);
+  const vest = M(0xff7a1a);
+  const skin = M(0xc68b5e);
+  const leaf = M(0x5c9a52);
+  const brick = M(0xb4583c);
+  const tape = M(0xf5c518, { emissive: 0x3a2c00 });
+
+  const shadow = (o) => { o.traverse((m) => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } }); return o; };
+  const box = (w, h, d, mat, x = 0, y = 0, z = 0) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); return m; };
+  // box whose origin is at its bottom face (used for things that "grow" upward)
+  const post = (w, h, d, mat, x = 0, y = 0, z = 0) => { const g = new THREE.BoxGeometry(w, h, d); g.translate(0, h / 2, 0); const m = new THREE.Mesh(g, mat); m.position.set(x, y, z); return m; };
+  // thin beam between two points
+  const up = new THREE.Vector3(0, 1, 0);
+  function beam(a, b, t, mat) {
+    const dir = new THREE.Vector3().subVectors(b, a);
+    const m = new THREE.Mesh(new THREE.BoxGeometry(t, dir.length(), t), mat);
+    m.position.copy(a).addScaledVector(dir, 0.5);
+    m.quaternion.setFromUnitVectors(up, dir.normalize());
+    return m;
+  }
+  const V = (x, y, z) => new THREE.Vector3(x, y, z);
+
+  // ---------- animation registry ----------
+  // mode: "grow" (scale y from 0), "drop" (falls into place), "pop" (scale all axes)
+  const anim = [];
+  function track(obj, t0, { t1 = null, mode = "grow", dur = 0.05 } = {}) {
+    obj.userData.anim = { t0, t1, mode, dur, y: obj.position.y };
+    anim.push(obj);
+    scene.add(shadow(obj));
+    return obj;
+  }
+
+  // ---------- site base (diorama) ----------
+  const base = new THREE.Group();
+  base.add(box(20, 0.8, 17, baseSide, 0, -0.4, 0));
+  base.add(box(19.2, 0.06, 16.2, sand, 0, 0.03, 0));
+  [[0, 8.2, 20, 0.5], [0, -8.2, 20, 0.5]].forEach(([x, z, w, d]) => base.add(box(w, 0.35, d, baseSide, x, 0.17, z)));
+  [[9.8, 0], [-9.8, 0]].forEach(([x, z]) => base.add(box(0.5, 0.35, 17, baseSide, x, 0.17, z)));
+  // debris and gravel
+  for (let i = 0; i < 26; i++) {
+    const s = 0.12 + Math.random() * 0.2;
+    base.add(box(s, s * 0.5, s, i % 3 ? baseSide : plank, -9 + Math.random() * 18, 0.08, 4.5 + Math.random() * 3));
+  }
+  scene.add(shadow(base));
+
+  // ---------- building ----------
+  const H = 1.4, FLOORS = 5, footY = 0.45;
+  const cx = [-3.7, -1.5, 0.7, 2.9], cz = [-2.7, 0, 2.7];
+  const slabW = 7.4, slabD = 6.2, slabX = -0.4;
+
+  // site marking strings (land stage)
+  const marks = new THREE.Group();
+  const corners = [V(-4.3, 0.1, -3.3), V(3.5, 0.1, -3.3), V(3.5, 0.1, 3.3), V(-4.3, 0.1, 3.3)];
+  corners.forEach((c, i) => {
+    marks.add(beam(c, corners[(i + 1) % 4], 0.04, tape));
+    marks.add(post(0.1, 0.5, 0.1, plank, c.x, 0, c.z));
+  });
+  track(marks, 0.0, { t1: 0.16, mode: "pop" });
+
+  // raft foundation
+  track(post(slabW + 0.6, footY, slabD + 0.6, concrete, slabX, 0, 0), 0.12);
+
+  const floorStart = (i) => 0.25 + i * 0.09;
+  for (let i = 0; i < FLOORS; i++) {
+    const y0 = footY + i * H;
+    // columns
+    const cols = new THREE.Group();
+    cols.position.y = y0;
+    cx.forEach((x) => cz.forEach((z) => cols.add(post(0.38, H - 0.22, 0.38, concrete, x, 0, z))));
+    track(cols, floorStart(i));
+    // slab (roof slab has an opening like a light well)
+    const slab = new THREE.Group();
+    slab.position.y = y0 + H - 0.22;
+    if (i < FLOORS - 1) slab.add(post(slabW, 0.22, slabD, slabMat, slabX, 0, 0));
+    else {
+      slab.add(post(slabW, 0.22, 1.8, slabMat, slabX, 0, -2.2));
+      slab.add(post(slabW, 0.22, 1.8, slabMat, slabX, 0, 2.2));
+      slab.add(post(2.6, 0.22, 2.6, slabMat, slabX - 2.4, 0, 0));
+      slab.add(post(2.6, 0.22, 2.6, slabMat, slabX + 2.4, 0, 0));
+    }
+    track(slab, floorStart(i) + 0.045, { mode: "drop" });
+  }
+  const roofY = footY + FLOORS * H;
+
+  // column stubs + rebar on the roof (next pour), removed at finishing
+  const rebar = new THREE.Group();
+  rebar.position.y = roofY;
+  cx.forEach((x) => cz.forEach((z) => {
+    rebar.add(post(0.38, 0.45, 0.38, concrete, x, 0, z));
+    [[-0.1, -0.1], [0.1, -0.1], [-0.1, 0.1], [0.1, 0.1]].forEach(([dx, dz]) => rebar.add(post(0.035, 1.0, 0.035, steel, x + dx, 0, z + dz)));
+  }));
+  track(rebar, 0.70, { t1: 0.9 });
+
+  // masonry infill with window openings, then glass
+  const bays = [];
+  for (let b = 0; b < 3; b++) {
+    const x = (cx[b] + cx[b + 1]) / 2, w = cx[b + 1] - cx[b] - 0.38;
+    bays.push({ x, z: cz[2], w, rot: 0 }, { x, z: cz[0], w, rot: 0 });
+  }
+  for (let b = 0; b < 2; b++) {
+    const z = (cz[b] + cz[b + 1]) / 2, w = cz[b + 1] - cz[b] - 0.38;
+    bays.push({ x: cx[0], z, w, rot: Math.PI / 2 }, { x: cx[3], z, w, rot: Math.PI / 2 });
+  }
+  for (let i = 0; i < FLOORS; i++) {
+    const walls = new THREE.Group(), panes = new THREE.Group();
+    walls.position.y = panes.position.y = footY + i * H;
+    const h = H - 0.22;
+    bays.forEach(({ x, z, w, rot }) => {
+      const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = rot;
+      g.add(post(w, 0.42, 0.2, block, 0, 0, 0));
+      g.add(post(w, 0.22, 0.2, block, 0, h - 0.22, 0));
+      g.add(post(0.25, h, 0.2, block, -w / 2 + 0.125, 0, 0));
+      g.add(post(0.25, h, 0.2, block, w / 2 - 0.125, 0, 0));
+      walls.add(g);
+      const p = new THREE.Group(); p.position.set(x, 0, z); p.rotation.y = rot;
+      p.add(post(w - 0.5, h - 0.64, 0.06, glass, 0, 0.42, 0));
+      panes.add(p);
+    });
+    track(walls, 0.72 + i * 0.028);
+    track(panes, 0.88 + i * 0.016, { mode: "pop" });
+  }
+
+  // scaffolding on the front and right faces, one group per level
+  function scaffoldLevel(i) {
+    const g = new THREE.Group();
+    g.position.y = footY + i * H;
+    const front = [], right = [];
+    for (let x = -4.4; x <= 3.6; x += 1.6) front.push(x);
+    for (let z = -3.2; z <= 3.3; z += 1.3) right.push(z);
+    const faces = [
+      { pts: front.map((x) => [V(x, 0, 3.55), V(x, 0, 4.15)]) },
+      { pts: right.map((z) => [V(3.75, 0, z), V(4.35, 0, z)]) },
+    ];
+    faces.forEach(({ pts }) => {
+      pts.forEach(([a, b]) => {
+        g.add(beam(a, V(a.x, H, a.z), 0.06, scaffoldPost));
+        g.add(beam(b, V(b.x, H, b.z), 0.06, scaffoldPost));
+      });
+      for (let k = 0; k < pts.length - 1; k++) {
+        const [a1, b1] = pts[k], [a2, b2] = pts[k + 1];
+        [0.55, H].forEach((y) => g.add(beam(V(b1.x, y, b1.z), V(b2.x, y, b2.z), 0.05, scaffoldRail)));
+        g.add(beam(V(a1.x, H, a1.z), V(a2.x, H, a2.z), 0.05, scaffoldRail));
+        const mid = V((a1.x + b1.x + a2.x + b2.x) / 4, 0.03, (a1.z + b1.z + a2.z + b2.z) / 4);
+        const len = a1.distanceTo(a2) + 0.05, along = Math.abs(a2.x - a1.x) > 0.01;
+        g.add(box(along ? len : 0.55, 0.05, along ? 0.55 : len, plank, mid.x, mid.y, mid.z));
+        if (k % 2 === 0) g.add(beam(V(b1.x, 0, b1.z), V(b2.x, H, b2.z), 0.04, scaffoldPost));
+      }
+    });
+    return g;
+  }
+  for (let i = 0; i < FLOORS; i++) track(scaffoldLevel(i), floorStart(i) + 0.06, { t1: 0.9 + i * 0.008 });
+
+  // ---------- tower crane ----------
+  const crane = new THREE.Group();
+  crane.position.set(6.2, 0, -5.4);
+  const MAST = 11, S = 0.7;
+  crane.add(box(1.6, 0.4, 1.6, concrete, 0, 0.2, 0));
+  for (let y = 0.4; y < MAST; y += S) {
+    const c = [V(-S / 2, y, -S / 2), V(S / 2, y, -S / 2), V(S / 2, y, S / 2), V(-S / 2, y, S / 2)];
+    c.forEach((p, k) => {
+      crane.add(beam(p, V(p.x, y + S, p.z), 0.07, red));
+      const n = c[(k + 1) % 4];
+      crane.add(beam(p, n, 0.04, red));
+      crane.add(beam(p, V(n.x, y + S, n.z), 0.035, red));
+    });
+  }
+  const slew = new THREE.Group();
+  slew.position.y = MAST + 0.4;
+  crane.add(slew);
+  slew.add(box(0.9, 0.7, 0.8, yellow, 0.4, 0.1, 0.65));                 // cab
+  slew.add(box(0.7, 0.5, 0.06, glass, 0.4, 0.15, 1.06));
+  // jib (triangular truss) and counter-jib
+  const JIB = 10;
+  for (let x = -3.5; x < JIB; x += 0.8) {
+    const a = V(x, 0, -0.25), b = V(x, 0, 0.25), t = V(x + 0.4, 0.55, 0);
+    slew.add(beam(a, b, 0.04, yellow));
+    slew.add(beam(a, t, 0.04, yellow)); slew.add(beam(b, t, 0.04, yellow));
+  }
+  slew.add(beam(V(-3.5, 0, -0.25), V(JIB, 0, -0.25), 0.07, yellow));
+  slew.add(beam(V(-3.5, 0, 0.25), V(JIB, 0, 0.25), 0.07, yellow));
+  slew.add(beam(V(-3.1, 0.55, 0), V(JIB, 0.55, 0), 0.06, yellow));
+  slew.add(beam(V(0, 0, 0), V(0, 2.2, 0), 0.12, yellow));               // apex
+  slew.add(beam(V(0, 2.2, 0), V(JIB * 0.7, 0.55, 0), 0.03, steel));
+  slew.add(beam(V(0, 2.2, 0), V(-3.2, 0.3, 0), 0.03, steel));
+  slew.add(box(1.0, 0.9, 0.9, concrete, -3.0, -0.35, 0));               // counterweight
+  const trolley = box(0.4, 0.2, 0.6, dark, 5, -0.12, 0);
+  slew.add(trolley);
+  const cableGeo = new THREE.BoxGeometry(0.025, 1, 0.025); cableGeo.translate(0, -0.5, 0);
+  const cable = new THREE.Mesh(cableGeo, steel);
+  trolley.add(cable);
+  const hook = new THREE.Group();
+  hook.add(box(0.2, 0.25, 0.2, yellow, 0, 0, 0));
+  hook.add(beam(V(0, -0.1, 0), V(-0.6, -0.6, 0), 0.02, steel), beam(V(0, -0.1, 0), V(0.6, -0.6, 0), 0.02, steel));
+  for (let k = 0; k < 3; k++) hook.add(box(1.6, 0.1, 0.1, steel, 0, -0.65, -0.12 + k * 0.12));
+  trolley.add(hook);
+  track(crane, 0.10, { t1: 0.935, mode: "grow", dur: 0.05 });
+
+  // ---------- excavator ----------
+  const exc = new THREE.Group();
+  exc.position.set(-6.4, 0.06, 4.6);
+  exc.rotation.y = 0.5;
+  exc.add(box(1.8, 0.35, 0.4, dark, 0, 0.18, -0.55), box(1.8, 0.35, 0.4, dark, 0, 0.18, 0.55));
+  const house = new THREE.Group(); house.position.y = 0.4; exc.add(house);
+  house.add(box(1.5, 0.55, 1.2, yellow, -0.15, 0.3, 0));
+  house.add(box(0.6, 0.65, 0.55, yellow, 0.35, 0.85, 0.3));
+  house.add(box(0.5, 0.45, 0.02, glass, 0.35, 0.9, 0.58));
+  const boom = new THREE.Group(); boom.position.set(0.55, 0.5, -0.2); house.add(boom);
+  const boomGeo = new THREE.BoxGeometry(1.9, 0.22, 0.22); boomGeo.translate(0.95, 0, 0);
+  boom.add(new THREE.Mesh(boomGeo, yellow));
+  const stick = new THREE.Group(); stick.position.x = 1.9; boom.add(stick);
+  const stickGeo = new THREE.BoxGeometry(0.18, 1.3, 0.18); stickGeo.translate(0, -0.65, 0);
+  stick.add(new THREE.Mesh(stickGeo, yellow));
+  stick.add(box(0.45, 0.35, 0.4, dark, 0.1, -1.35, 0));
+  track(exc, -1, { t1: 0.93, mode: "pop" });
+  // dirt pile
+  const pile = new THREE.Mesh(new THREE.ConeGeometry(1.0, 0.7, 14), M(0x9b7b55, { roughness: 1 }));
+  pile.position.set(-8.1, 0.35, 2.4);
+  track(pile, -1, { t1: 0.93, mode: "pop" });
+
+  // ---------- truck ----------
+  const truck = new THREE.Group();
+  truck.position.set(-3.6, 0.06, 6.3);
+  truck.add(box(0.9, 0.8, 1.0, M(0xe9e4da), 1.1, 0.6, 0), box(1.9, 0.5, 1.05, dark, -0.4, 0.55, 0));
+  truck.add(box(0.05, 0.4, 0.8, glass, 1.56, 0.75, 0));
+  [[-1, 0.5], [-1, -0.5], [1.1, 0.5], [1.1, -0.5]].forEach(([x, z]) => {
+    const w = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.18, 14), dark);
+    w.rotation.x = Math.PI / 2; w.position.set(x, 0.22, z); truck.add(w);
+  });
+  for (let k = 0; k < 4; k++) truck.add(box(1.7, 0.1, 0.12, steel, -0.4, 0.86 + (k % 2) * 0.1, -0.3 + k * 0.18));
+  track(truck, -1, { t1: 0.93, mode: "pop" });
+
+  // ---------- materials yard ----------
+  const yard = new THREE.Group();
+  [[6.2, 4.6], [7.3, 4.6], [6.2, 5.8]].forEach(([x, z]) => { yard.add(box(0.9, 0.12, 0.9, plank, x, 0.12, z), box(0.8, 0.5, 0.8, brick, x, 0.43, z)); });
+  for (let k = 0; k < 6; k++) {
+    const p = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 2.2, 10), M(0x8f98a3, { metalness: 0.4 }));
+    p.rotation.z = Math.PI / 2; p.position.set(7.0, 0.12 + (k > 2 ? 0.17 : 0), 7.0 + (k % 3) * 0.19); yard.add(p);
+  }
+  for (let k = 0; k < 5; k++) yard.add(box(2.4, 0.08, 0.25, plank, -0.5, 0.06 + k * 0.08, 6.6));
+  // safety tape along the front
+  for (let x = -8.5; x <= 8.6; x += 2.8) yard.add(post(0.06, 0.6, 0.06, scaffoldRail, x, 0, 7.6));
+  yard.add(beam(V(-8.5, 0.55, 7.6), V(8.5, 0.55, 7.6), 0.03, tape));
+  track(yard, -1, { t1: 0.93, mode: "pop" });
+
+  // ---------- workers ----------
+  function worker(x, z) {
+    const g = new THREE.Group();
+    g.position.set(x, 0.06, z);
+    g.add(post(0.08, 0.3, 0.08, dark, -0.06, 0, 0), post(0.08, 0.3, 0.08, dark, 0.06, 0, 0));
+    g.add(post(0.26, 0.32, 0.16, vest, 0, 0.3, 0));
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.09, 10, 8), skin); head.position.y = 0.72; g.add(head);
+    const hat = new THREE.Mesh(new THREE.SphereGeometry(0.11, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2), yellow); hat.position.y = 0.75; g.add(hat);
+    track(g, -1, { t1: 0.93, mode: "pop" });
+    return g;
+  }
+  const walkers = [worker(-1.5, 5.2), worker(2.4, 5.6)];
+  worker(-4.8, 5.4); worker(5.6, 5.2); worker(-5.2, 3.0);
+
+  // ---------- landscaping at handover ----------
+  const garden = new THREE.Group();
+  [[-7.5, -5], [-7.5, -2], [-7.5, 1], [7.8, 1], [7.8, -2], [-2, 6.2], [2.5, 6.2]].forEach(([x, z]) => {
+    garden.add(post(0.1, 0.5, 0.1, plank, x, 0, z));
+    const c = new THREE.Mesh(new THREE.SphereGeometry(0.6, 14, 10), leaf); c.position.set(x, 0.95, z); garden.add(c);
+  });
+  track(garden, 0.94, { mode: "pop" });
+
+  // ---------- progress driving ----------
+  let target = progress, cur = 0;
+  const listeners = [];
+  const ease = (t) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
+  function apply(p) {
+    anim.forEach((o) => {
+      const a = o.userData.anim;
+      let f = ease((p - a.t0) / a.dur);
+      if (a.t1 !== null) f *= 1 - ease((p - a.t1) / a.dur);
+      o.visible = f > 0.002;
+      if (!o.visible) return;
+      const removing = a.t1 !== null && p > a.t1;
+      if (a.mode === "grow") removing ? o.scale.setScalar(f) : o.scale.set(1, f, 1);
+      else if (a.mode === "pop") o.scale.setScalar(f);
+      else { o.position.y = a.y + (1 - f) * 2.5; o.scale.setScalar(1); }
+    });
+    // raw concrete gets painted during finishing
+    const paint = ease((p - 0.9) / 0.06);
+    concrete.color.lerpColors(raw, painted, paint);
+    slabMat.color.lerpColors(raw, painted, paint);
+  }
+
+  // ---------- camera + controls ----------
+  let theta = 0.62, phi = 1.05, radius = startRadius;
+  const look = V(0.4, 2.6, 0.4);
+  let dragging = false, lastX = 0, lastY = 0, idle = 999;
+  if (interactive) {
+    canvas.style.cursor = "grab";
+    canvas.addEventListener("pointerdown", (e) => { dragging = true; lastX = e.clientX; lastY = e.clientY; canvas.style.cursor = "grabbing"; });
+    window.addEventListener("pointerup", () => { dragging = false; canvas.style.cursor = "grab"; });
+    window.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      theta -= (e.clientX - lastX) * 0.006;
+      phi = Math.min(1.4, Math.max(0.55, phi - (e.clientY - lastY) * 0.004));
+      lastX = e.clientX; lastY = e.clientY; idle = 0;
+    });
+    canvas.addEventListener("wheel", (e) => { e.preventDefault(); radius = Math.min(70, Math.max(24, radius + e.deltaY * 0.02)); }, { passive: false });
+  }
+
+  function resize() {
+    const { clientWidth: w, clientHeight: h } = canvas;
+    if (!w || !h) return;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  new ResizeObserver(resize).observe(canvas);
+  resize();
+
+  // only render while visible on screen (saves battery on phones)
+  let onScreen = true;
+  new IntersectionObserver(([e]) => (onScreen = e.isIntersecting)).observe(canvas);
+
+  const clock = new THREE.Clock();
+  let t = 0;
+  function frame() {
+    requestAnimationFrame(frame);
+    const realDt = Math.min(clock.getDelta(), 0.5);
+    if (!onScreen) return;
+    const dt = Math.min(realDt, 0.05);
+    t += dt; idle++;
+
+    // move the displayed progress toward the target at a steady pace (real time, so slow devices keep up)
+    const step = speed * realDt;
+    if (Math.abs(target - cur) > 0.0005) {
+      cur += Math.sign(target - cur) * Math.min(step, Math.abs(target - cur));
+      apply(cur);
+      listeners.forEach((fn) => fn(cur));
+    }
+
+    // crane slews, trolley travels, hook raises and lowers
+    slew.rotation.y = -2.0 + Math.sin(t * 0.3) * 0.7;
+    trolley.position.x = 5.2 + Math.sin(t * 0.45) * 2.6;
+    const drop = 3.2 + Math.sin(t * 0.7) * 1.6;
+    cable.scale.y = drop;
+    hook.position.y = -drop;
+    // excavator digs
+    house.rotation.y = Math.sin(t * 0.35) * 0.6;
+    boom.rotation.z = 0.35 + Math.sin(t * 1.1) * 0.22;
+    stick.rotation.z = -0.5 + Math.sin(t * 1.1 + 1.2) * 0.35;
+    // workers walk back and forth
+    walkers[0].position.x = -1.5 + Math.sin(t * 0.5) * 2.2;
+    walkers[0].rotation.y = Math.cos(t * 0.5) > 0 ? Math.PI / 2 : -Math.PI / 2;
+    walkers[1].position.z = 5.6 + Math.sin(t * 0.4 + 1) * 0.9;
+
+    if (!dragging && idle > 180) theta += dt * 0.08;
+    camera.position.set(
+      look.x + radius * Math.sin(phi) * Math.sin(theta),
+      look.y + radius * Math.cos(phi),
+      look.z + radius * Math.sin(phi) * Math.cos(theta)
+    );
+    camera.lookAt(look);
+    renderer.render(scene, camera);
+  }
+  apply(0);
+  frame();
+
+  return {
+    setProgress(p) { target = Math.max(0, Math.min(1, p)); },
+    replay() { if (target < 0.05) target = 1; cur = 0; apply(0); },
+    jump(p) { target = cur = p; apply(p); listeners.forEach((fn) => fn(cur)); },
+    onProgress(fn) { listeners.push(fn); },
+  };
+}

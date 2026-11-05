@@ -237,3 +237,23 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px;
 .burger { width: 42px; height: 42px; border-radius: 12px; background: rgba(255,255,255,.08); display: grid; place-items: center; }
 .m-sticky { position: static; display: flex; gap: 10px; padding: 14px 20px; background: #fff; border-top: 1px solid var(--line); }
 .m-sticky .btn { flex: 1; justify-content: center; padding: 13px; }
+
+/* ---------- 3D CONSTRUCTION SITE ---------- */
+.site3d-card { background: linear-gradient(180deg, #dfe7f0 0%, #f4f1ea 100%); }
+.site3d-card canvas { width: 100%; height: 100%; display: block; }
+.badge-3d { position: absolute; bottom: 14px; right: 14px; padding: 5px 10px; border-radius: 8px; background: var(--ink); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+.site3d { position: relative; height: 470px; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); background: radial-gradient(900px 420px at 50% 0%, #e6edf5 0%, #f4f1ea 70%); }
+.site3d canvas { width: 100%; height: 100%; display: block; touch-action: none; }
+.site-tag { position: absolute; top: 16px; left: 16px; background: var(--ink); color: #fff; font-size: 12px; font-weight: 700; padding: 7px 12px; border-radius: 999px; }
+.site-stage { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,.92); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; display: grid; grid-template-columns: auto auto; column-gap: 14px; align-items: end; }
+.site-stage small { grid-column: 1 / -1; font-size: 11px; color: var(--muted); }
+.site-stage b { font-family: "Sora"; font-size: 15px; }
+.site-stage span { font-family: "Sora"; font-weight: 700; color: #94621a; }
+.site-controls { position: absolute; left: 16px; right: 16px; bottom: 16px; display: flex; align-items: center; gap: 14px; background: rgba(255,255,255,.92); border: 1px solid var(--line); border-radius: 14px; padding: 10px 14px; }
+.replay { border: 0; background: var(--ink); color: #fff; font: 600 13px "Manrope"; padding: 9px 14px; border-radius: 10px; cursor: pointer; white-space: nowrap; }
+.scrub { flex: 1; display: grid; gap: 6px; font-size: 11px; color: var(--muted); }
+.site-hint { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.tl-item[data-p] { cursor: pointer; border-radius: 12px; }
+.tl-item[data-p]:hover h3, .tl-item.viewing h3 { color: #94621a; }
+.tl-item.viewing .tl-dot { outline: 2px solid var(--ink); outline-offset: 2px; }
+.tl-item[data-p]:focus-visible { outline: 2px solid var(--gold); outline-offset: 4px; }
