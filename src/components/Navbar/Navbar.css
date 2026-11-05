@@ -1,0 +1,26 @@
+.nav { position: fixed; inset: 0 0 auto 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px var(--gutter); transition: background-color .3s, padding .3s, box-shadow .3s; }
+.nav--solid { padding-top: 12px; padding-bottom: 12px; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(12px); box-shadow: 0 1px 0 var(--line); }
+.nav-links { display: flex; gap: 30px; font-size: 15px; }
+.nav-links a { color: var(--muted); text-decoration: none; }
+.nav-links a:hover { color: var(--text); }
+.nav-right { display: flex; align-items: center; gap: 14px; }
+.nav-menu-cta, .nav-burger { display: none; }
+
+.theme-toggle { display: grid; grid-template-columns: 1fr 1fr; width: 156px; height: 44px; padding: 4px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); font-weight: 600; font-size: 13px; cursor: pointer; }
+.theme-toggle span { display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: 999px; transition: background-color .35s, color .35s; }
+.theme-toggle span.on { background: var(--ink); color: #fff; }
+:root[data-theme="night"] .theme-toggle span.on { background: var(--accent-2); color: var(--ink); }
+
+@media (max-width: 1080px) {
+  .nav-links { position: absolute; top: 100%; left: var(--gutter); right: var(--gutter); flex-direction: column; gap: 4px; padding: 12px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); display: none; }
+  .nav--open .nav-links { display: flex; }
+  .nav-links a { padding: 12px; border-radius: 10px; color: var(--text); }
+  .nav-links a:hover { background: var(--surface-2); }
+  .nav-links .nav-menu-cta { display: inline-flex; margin-top: 6px; color: var(--ink); }
+  .nav-cta { display: none; }
+  .nav-burger { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; }
+}
+@media (max-width: 760px) {
+  .theme-toggle { width: 118px; height: 40px; font-size: 12px; }
+  .logo { font-size: 18px; }
+}
