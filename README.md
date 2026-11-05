@@ -7,6 +7,7 @@ A showcase website for a builder of apartments and houses, featuring an interact
 - **Feature plan, tech stack and roadmap:** [docs/FEATURES.md](docs/FEATURES.md)
 - **Preview images:** [docs/previews/](docs/previews)
 - **Clickable HTML mockup:** [mockups/](mockups). Open `construction.html` for the full-screen animated 3D construction site.
+- **Landing page proposal (animated build hero, Day/Night):** `mockups/home.html`. Previews are in [docs/previews/home/](docs/previews/home).
 - **Build animation video:** [docs/previews/construction-build.mp4](docs/previews/construction-build.mp4)
 
 ## Run the mockup locally

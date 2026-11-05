@@ -51,6 +51,36 @@ Then open http://localhost:8080.
 
 ---
 
+## Landing page: animated build hero (proposal)
+
+The home page hero plays the whole construction, from an empty plot to the finished building, with a Day/Night switch.
+
+| Preview | |
+|---|---|
+| Day: foundation | ![](previews/home/01-day-foundation.png) |
+| Day: superstructure, with an insight card | ![](previews/home/02-day-superstructure.png) |
+| Day: complete | ![](previews/home/03-day-complete.png) |
+| Night: masonry | ![](previews/home/04-night-masonry.png) |
+| Night: complete | ![](previews/home/05-night-complete.png) |
+| Mobile (day / night) | ![](previews/home/mobile-day.png) ![](previews/home/mobile-night.png) |
+| Video (build, then switch to night) | [home-build.mp4](previews/home/home-build.mp4) |
+
+**What happens on screen**
+- The building rises stage by stage: site marking, foundation, frame and scaffolding, brick walls, glass and paint, handover.
+- **Trees grow during the build.** Trees away from the machinery sprout early, with a small bounce. The rest appear once the site is cleared, and the sand turns into lawn at handover.
+- **Insight cards** are pinned to the model with dotted connector lines and change with each stage:
+  - raft foundation
+  - earthquake-resistant frame
+  - AAC block walls
+  - double-glazed windows
+  - at handover: solar rooftop, green space and rainwater harvesting
+- **Live counters** for floors built, trees planted and percentage complete, plus a headline underline that grows with progress.
+- **Effects:** dust rising around the frame while work is going on, a golden sparkle burst from the roof when the building is finished, a blinking crane warning light, and trees swaying in the breeze.
+- **Night mode:** moonlight, a starry sky, about 60% of windows lit, warm LED strips on every floor edge, glowing street lamps that light the lawn, and fireflies. The 3D lighting fades smoothly between day and night.
+- **Phones:** the layout stacks, insight cards cycle one at a time, and the stage bar shows only the current stage name.
+
+Files: `mockups/home.html`, `mockups/home.css`, and `mockups/construction.js` (with the `landscape`, `effects`, `theme` and `view` options).
+
 ## Suggested tech stack
 
 | Need | Choice | Why |

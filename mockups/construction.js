@@ -23,7 +23,13 @@ export function stageFor(p) {
   return STAGES[5];
 }
 
-export function mountConstruction(canvas, { progress = 0.84, interactive = true, speed = 0.22, radius: startRadius = 46 } = {}) {
+export function mountConstruction(canvas, {
+  progress = 0.84, interactive = true, speed = 0.22, radius: startRadius = 46,
+  landscape = false,   // trees grow during the build, lawn, lamps and solar panels at handover
+  effects = false,     // dust while building, sparkle burst on completion, fireflies at night
+  theme = "day",       // "day" | "night"
+  view = {},           // { theta, phi, look: [x, y, z] }
+} = {}) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
@@ -32,7 +38,8 @@ export function mountConstruction(canvas, { progress = 0.84, interactive = true,
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 200);
 
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7a66, 1.1));
+  const hemi = new THREE.HemisphereLight(0xffffff, 0x8a7a66, 1.1);
+  scene.add(hemi);
   const sun = new THREE.DirectionalLight(0xfff1dc, 2.4);
   sun.position.set(12, 22, 9);
   sun.castShadow = true;
@@ -62,6 +69,11 @@ export function mountConstruction(canvas, { progress = 0.84, interactive = true,
   const leaf = M(0x5c9a52);
   const brick = M(0xb4583c);
   const tape = M(0xf5c518, { emissive: 0x3a2c00 });
+  const glassLit = M(0x6d93bd, { roughness: 0.15, metalness: 0.5, emissive: 0xffbe6a, emissiveIntensity: 0 });
+  const led = M(0xc9c4bb, { emissive: 0xffd28a, emissiveIntensity: 0 });
+  const bulb = M(0xfff4dc, { emissive: 0xffd9a0, emissiveIntensity: 0.2 });
+  const beacon = M(0x7a1a12, { emissive: 0xff2a1a, emissiveIntensity: 0 });
+  const lawn = new THREE.Color(0x86b06a), sandCol = new THREE.Color(0xd9c6a0);
 
   const shadow = (o) => { o.traverse((m) => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } }); return o; };
   const box = (w, h, d, mat, x = 0, y = 0, z = 0) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); return m; };
@@ -136,6 +148,10 @@ export function mountConstruction(canvas, { progress = 0.84, interactive = true,
       slab.add(post(2.6, 0.22, 2.6, slabMat, slabX - 2.4, 0, 0));
       slab.add(post(2.6, 0.22, 2.6, slabMat, slabX + 2.4, 0, 0));
     }
+    slab.add(post(slabW + 0.04, 0.07, 0.05, led, slabX, 0.075, slabD / 2 + 0.005));
+    slab.add(post(slabW + 0.04, 0.07, 0.05, led, slabX, 0.075, -slabD / 2 - 0.005));
+    slab.add(post(0.05, 0.07, slabD, led, slabX + slabW / 2 + 0.005, 0.075, 0));
+    slab.add(post(0.05, 0.07, slabD, led, slabX - slabW / 2 - 0.005, 0.075, 0));
     track(slab, floorStart(i) + 0.045, { mode: "drop" });
   }
   const roofY = footY + FLOORS * H;
@@ -171,7 +187,7 @@ export function mountConstruction(canvas, { progress = 0.84, interactive = true,
       g.add(post(0.25, h, 0.2, block, w / 2 - 0.125, 0, 0));
       walls.add(g);
       const p = new THREE.Group(); p.position.set(x, 0, z); p.rotation.y = rot;
-      p.add(post(w - 0.5, h - 0.64, 0.06, glass, 0, 0.42, 0));
+      p.add(post(w - 0.5, h - 0.64, 0.06, Math.random() < 0.62 ? glassLit : glass, 0, 0.42, 0));
       panes.add(p);
     });
     track(walls, 0.72 + i * 0.028);
@@ -241,6 +257,9 @@ export function mountConstruction(canvas, { progress = 0.84, interactive = true,
   slew.add(beam(V(0, 2.2, 0), V(JIB * 0.7, 0.55, 0), 0.03, steel));
   slew.add(beam(V(0, 2.2, 0), V(-3.2, 0.3, 0), 0.03, steel));
   slew.add(box(1.0, 0.9, 0.9, concrete, -3.0, -0.35, 0));               // counterweight
+  const beaconLamp = new THREE.Mesh(new THREE.SphereGeometry(0.14, 12, 8), beacon);
+  beaconLamp.position.set(0, 2.35, 0); slew.add(beaconLamp);
+  const tipLamp = beaconLamp.clone(); tipLamp.position.set(JIB, 0.2, 0); slew.add(tipLamp);
   const trolley = box(0.4, 0.2, 0.6, dark, 5, -0.12, 0);
   slew.add(trolley);
   const cableGeo = new THREE.BoxGeometry(0.025, 1, 0.025); cableGeo.translate(0, -0.5, 0);
@@ -314,13 +333,87 @@ export function mountConstruction(canvas, { progress = 0.84, interactive = true,
   const walkers = [worker(-1.5, 5.2), worker(2.4, 5.6)];
   worker(-4.8, 5.4); worker(5.6, 5.2); worker(-5.2, 3.0);
 
-  // ---------- landscaping at handover ----------
+  // ---------- landscaping ----------
+  const trees = [], lamps = [];
+  if (landscape) buildLandscape();
+  function buildLandscape() {
+    // trees: ones away from machinery grow while the building rises, the rest after the site is cleared
+    const busy = [[-6.4, 4.6], [-3.6, 6.3], [6.6, 5.6], [-8.1, 2.4], [6.2, -5.4], [7.0, 7.2], [-0.5, 6.6]];
+    const spots = [];
+    for (let z = -6; z <= 6.1; z += 2.4) spots.push([-8.4, z], [8.4, z]);
+    for (let x = -5.6; x <= 5.7; x += 2.8) spots.push([x, -7.0]);
+    [-7.2, -4.6, 3.6, 6.4].forEach((x) => spots.push([x, 6.9]));
+    const leafCols = [0x5c9a52, 0x6aa85a, 0x4f8a4b, 0x7cb15f];
+    spots.forEach(([x, z], k) => {
+      const clash = busy.some(([bx, bz]) => Math.hypot(bx - x, bz - z) < 2.0);
+      const t0 = clash ? 0.935 + Math.random() * 0.04 : 0.14 + Math.random() * 0.74;
+      const g = new THREE.Group();
+      g.position.set(x + (Math.random() - 0.5) * 0.5, 0.06, z + (Math.random() - 0.5) * 0.5);
+      const s = 0.8 + Math.random() * 0.5;
+      const lm = M(leafCols[k % leafCols.length]);
+      g.add(post(0.14, 0.7 * s, 0.14, plank, 0, 0, 0));
+      if (k % 3 === 0) {
+        const c = new THREE.Mesh(new THREE.ConeGeometry(0.6 * s, 1.7 * s, 10), lm); c.position.y = 1.3 * s; g.add(c);
+      } else {
+        const a = new THREE.Mesh(new THREE.SphereGeometry(0.65 * s, 14, 10), lm); a.position.y = 1.15 * s; g.add(a);
+        const b = new THREE.Mesh(new THREE.SphereGeometry(0.42 * s, 12, 8), lm); b.position.set(0.3 * s, 1.55 * s, 0.1); g.add(b);
+      }
+      g.userData.phase = Math.random() * 6;
+      track(g, t0, { mode: "tree", dur: 0.06 });
+      trees.push(g);
+    });
+    // entrance path, hedges, street lamps and rooftop solar panels at handover
+    const pave = M(0xdcd6ca);
+    track(post(1.4, 0.05, 4.6, pave, slabX, 0.03, 5.6), 0.94, { mode: "pop" });
+    const hedge = M(0x4e8746);
+    [-1.6, 0.8].forEach((x) => track(post(0.5, 0.35, 3.6, hedge, x, 0.05, 5.6), 0.95, { mode: "grow" }));
+    [[-5.5, 4.6], [-2.4, 4.6], [1.6, 4.6], [4.8, 4.6], [5.0, -4.2], [-6.0, -4.2]].forEach(([x, z]) => {
+      const g = new THREE.Group(); g.position.set(x, 0.05, z);
+      g.add(post(0.08, 1.6, 0.08, dark, 0, 0, 0));
+      const b = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 8), bulb); b.position.y = 1.7; g.add(b);
+      const light = new THREE.PointLight(0xffc98a, 0, 7, 2); light.position.y = 1.6; g.add(light);
+      track(g, 0.95, { mode: "grow" });
+      lamps.push(light);
+    });
+    const pv = M(0x22344f, { roughness: 0.3, metalness: 0.6 });
+    const solar = new THREE.Group(); solar.position.y = roofY + 0.22;
+    for (let k = 0; k < 5; k++) [-2.3, 2.3].forEach((z) => {
+      const panel = box(1.15, 0.05, 1.1, pv, slabX - 2.9 + k * 1.3, 0.35, z); panel.rotation.x = z > 0 ? 0.35 : -0.35;
+      solar.add(panel, post(0.06, 0.3, 0.06, steel, slabX - 2.9 + k * 1.3, 0, z));
+    });
+    track(solar, 0.955, { mode: "pop" });
+  }
+
+  // ---------- effects: dust, completion sparkles, fireflies ----------
+  const dotTex = (() => {
+    const c = document.createElement("canvas"); c.width = c.height = 64;
+    const g = c.getContext("2d"), r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    r.addColorStop(0, "rgba(255,255,255,1)"); r.addColorStop(0.4, "rgba(255,255,255,.6)"); r.addColorStop(1, "rgba(255,255,255,0)");
+    g.fillStyle = r; g.fillRect(0, 0, 64, 64);
+    return new THREE.CanvasTexture(c);
+  })();
+  function points(n, color, size, additive) {
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(n * 3), 3));
+    const mat = new THREE.PointsMaterial({ color, size, map: dotTex, transparent: true, opacity: 0, depthWrite: false,
+      blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending });
+    const pts = new THREE.Points(geo, mat); pts.frustumCulled = false; scene.add(pts);
+    return pts;
+  }
+  const fx = effects ? {
+    dust: points(90, 0xcdb68e, 0.35, false),
+    spark: points(220, 0xffcf6b, 0.32, true),
+    flies: points(60, 0xd9ff8a, 0.28, true),
+    seeds: Array.from({ length: 220 }, () => [Math.random(), Math.random(), Math.random()]),
+    burst: -1, fired: false,
+  } : null;
+
   const garden = new THREE.Group();
   [[-7.5, -5], [-7.5, -2], [-7.5, 1], [7.8, 1], [7.8, -2], [-2, 6.2], [2.5, 6.2]].forEach(([x, z]) => {
     garden.add(post(0.1, 0.5, 0.1, plank, x, 0, z));
     const c = new THREE.Mesh(new THREE.SphereGeometry(0.6, 14, 10), leaf); c.position.set(x, 0.95, z); garden.add(c);
   });
-  track(garden, 0.94, { mode: "pop" });
+  if (!landscape) track(garden, 0.94, { mode: "pop" });
 
   // ---------- progress driving ----------
   let target = progress, cur = 0;
@@ -336,17 +429,38 @@ export function mountConstruction(canvas, { progress = 0.84, interactive = true,
       const removing = a.t1 !== null && p > a.t1;
       if (a.mode === "grow") removing ? o.scale.setScalar(f) : o.scale.set(1, f, 1);
       else if (a.mode === "pop") o.scale.setScalar(f);
+      else if (a.mode === "tree") { const k = f - 1; o.scale.setScalar(Math.max(0.001, 1 + 2.70158 * k * k * k + 1.70158 * k * k)); }
       else { o.position.y = a.y + (1 - f) * 2.5; o.scale.setScalar(1); }
     });
     // raw concrete gets painted during finishing
     const paint = ease((p - 0.9) / 0.06);
     concrete.color.lerpColors(raw, painted, paint);
     slabMat.color.lerpColors(raw, painted, paint);
+    led.color.copy(slabMat.color);
+    if (landscape) sand.color.lerpColors(sandCol, lawn, ease((p - 0.93) / 0.06));
+  }
+
+  // ---------- day / night ----------
+  let night = theme === "night" ? 1 : 0, nightTarget = night;
+  const C = (h) => new THREE.Color(h);
+  const DAY = { sky: C(0xffffff), ground: C(0x8a7a66), hemi: 1.1, sun: C(0xfff1dc), sunI: 2.4, pos: V(12, 22, 9) };
+  const NIGHT = { sky: C(0x7f92cf), ground: C(0x1a2133), hemi: 0.5, sun: C(0x9fb2ff), sunI: 0.5, pos: V(-14, 18, 6) };
+  function applyTheme(m) {
+    hemi.color.lerpColors(DAY.sky, NIGHT.sky, m);
+    hemi.groundColor.lerpColors(DAY.ground, NIGHT.ground, m);
+    hemi.intensity = DAY.hemi + (NIGHT.hemi - DAY.hemi) * m;
+    sun.color.lerpColors(DAY.sun, NIGHT.sun, m);
+    sun.intensity = DAY.sunI + (NIGHT.sunI - DAY.sunI) * m;
+    sun.position.lerpVectors(DAY.pos, NIGHT.pos, m);
+    glassLit.emissiveIntensity = m * 1.5;
+    bulb.emissiveIntensity = 0.2 + m * 2.2;
+    led.emissiveIntensity = m * 2.2 * ease((cur - 0.9) / 0.06);
+    lamps.forEach((l) => (l.intensity = m * 14));
   }
 
   // ---------- camera + controls ----------
-  let theta = 0.62, phi = 1.05, radius = startRadius;
-  const look = V(0.4, 2.6, 0.4);
+  let theta = view.theta ?? 0.62, phi = view.phi ?? 1.05, radius = startRadius;
+  const look = view.look ? V(...view.look) : V(0.4, 2.6, 0.4);
   let dragging = false, lastX = 0, lastY = 0, idle = 999;
   if (interactive) {
     canvas.style.cursor = "grab";
@@ -375,6 +489,8 @@ export function mountConstruction(canvas, { progress = 0.84, interactive = true,
   let onScreen = true;
   new IntersectionObserver(([e]) => (onScreen = e.isIntersecting)).observe(canvas);
 
+  const frameListeners = [];
+  const tmp = new THREE.Vector3();
   const clock = new THREE.Clock();
   let t = 0;
   function frame() {
@@ -407,6 +523,15 @@ export function mountConstruction(canvas, { progress = 0.84, interactive = true,
     walkers[0].rotation.y = Math.cos(t * 0.5) > 0 ? Math.PI / 2 : -Math.PI / 2;
     walkers[1].position.z = 5.6 + Math.sin(t * 0.4 + 1) * 0.9;
 
+    // day/night crossfade
+    night += (nightTarget - night) * Math.min(1, realDt * 2.5);
+    applyTheme(night);
+    const blink = (Math.sin(t * 4) > 0.6 ? 1 : 0.15);
+    beacon.emissiveIntensity = (0.3 + night * 2.5) * blink;
+    // trees sway a little in the breeze
+    trees.forEach((g) => { g.rotation.z = Math.sin(t * 1.3 + g.userData.phase) * 0.025; });
+    if (fx) updateEffects(realDt);
+
     if (!dragging && idle > 180) theta += dt * 0.08;
     camera.position.set(
       look.x + radius * Math.sin(phi) * Math.sin(theta),
@@ -415,6 +540,50 @@ export function mountConstruction(canvas, { progress = 0.84, interactive = true,
     );
     camera.lookAt(look);
     renderer.render(scene, camera);
+    frameListeners.forEach((fn) => fn(cur));
+  }
+
+  function updateEffects(dt) {
+    const { dust, spark, flies, seeds } = fx;
+    // dust drifts up around the rising frame while work is happening
+    const active = ease((cur - 0.12) / 0.04) * (1 - ease((cur - 0.88) / 0.05));
+    dust.material.opacity = active * (0.55 - night * 0.3);
+    const top = footY + Math.min(FLOORS, Math.max(0.6, (cur - 0.25) / 0.09 + 0.6)) * H;
+    const dp = dust.geometry.attributes.position;
+    for (let i = 0; i < dp.count; i++) {
+      const [a, b, c] = seeds[i], k = (c + t * 0.12) % 1;
+      const side = i % 4, u = a * 8 - 4.4;
+      const x = side === 0 ? u : side === 1 ? 4.0 : side === 2 ? u : -4.9;
+      const z = side === 0 ? 3.9 : side === 1 ? b * 7 - 3.5 : side === 2 ? -3.7 : b * 7 - 3.5;
+      dp.setXYZ(i, x + Math.sin(t + i) * 0.3, k * top, z + Math.cos(t * 0.8 + i) * 0.3);
+    }
+    dp.needsUpdate = true;
+    // golden sparkle burst from the roof when the building is completed
+    if (cur >= 0.975 && !fx.fired) { fx.fired = true; fx.burst = 0; }
+    if (cur < 0.9) fx.fired = false;
+    const sp = spark.geometry.attributes.position;
+    if (fx.burst >= 0) {
+      fx.burst += dt;
+      const T = fx.burst;
+      for (let i = 0; i < sp.count; i++) {
+        const [a, b, c] = seeds[i], ang = a * Math.PI * 2, out = 1.5 + b * 4.5;
+        sp.setXYZ(i, slabX + Math.cos(ang) * out * T, roofY + 0.5 + (4 + c * 6) * T - 4.9 * T * T, Math.sin(ang) * out * T);
+      }
+      sp.needsUpdate = true;
+      spark.material.opacity = Math.max(0, 1 - T / 2.2);
+      if (T > 2.2) fx.burst = -1;
+    } else spark.material.opacity = 0;
+    // fireflies drift around the trees at night once landscaping is in
+    const fp = flies.geometry.attributes.position;
+    for (let i = 0; i < fp.count; i++) {
+      const [a, b, c] = seeds[i];
+      const side = i % 3;
+      const bx = side === 0 ? -8.0 + b : side === 1 ? 8.0 - b : a * 14 - 7;
+      const bz = side === 2 ? -6.4 - b : a * 13 - 6.5;
+      fp.setXYZ(i, bx + Math.sin(t * 0.7 + i) * 0.8, 0.6 + c * 2 + Math.sin(t * 1.3 + i * 2) * 0.3, bz + Math.cos(t * 0.5 + i) * 0.8);
+    }
+    fp.needsUpdate = true;
+    flies.material.opacity = night * ease((cur - 0.2) / 0.1) * (0.65 + Math.sin(t * 3) * 0.25);
   }
   apply(0);
   frame();
@@ -424,5 +593,13 @@ export function mountConstruction(canvas, { progress = 0.84, interactive = true,
     replay() { if (target < 0.05) target = 1; cur = 0; apply(0); },
     jump(p) { target = cur = p; apply(p); listeners.forEach((fn) => fn(cur)); },
     onProgress(fn) { listeners.push(fn); },
+    onFrame(fn) { frameListeners.push(fn); },
+    setTheme(name, instant = false) { nightTarget = name === "night" ? 1 : 0; if (instant) { night = nightTarget; applyTheme(night); } },
+    // world point -> pixel position inside the canvas (for HTML labels that follow the 3D model)
+    project([x, y, z]) {
+      tmp.set(x, y, z).project(camera);
+      return { x: (tmp.x + 1) / 2 * canvas.clientWidth, y: (1 - tmp.y) / 2 * canvas.clientHeight, behind: tmp.z > 1 };
+    },
+    get progress() { return cur; },
   };
 }
