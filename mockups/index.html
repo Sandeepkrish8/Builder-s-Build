@@ -38,7 +38,7 @@
     <div class="scene-wrap">
       <canvas id="scene"></canvas>
       <div class="float-card fc-1" id="floorCard">
-        <h4>Tower B · Floor 12</h4>
+        <div class="fc-title">Tower B · Floor 12</div>
         <div class="row"><span>Available units</span><span class="gold">3 of 6</span></div>
         <div class="row"><span>Configurations</span><span>2 & 3 BHK</span></div>
         <div class="row"><span>Starting at</span><span class="gold">₹ 92 L</span></div>
@@ -52,7 +52,7 @@
 <!-- 2. PROJECTS -->
 <section class="section" id="projects">
   <div class="section-head">
-    <div><div class="eyebrow">Our Projects</div><h2>Find the home that fits your life.</h2></div>
+    <div><h2>Find the home that fits your life.</h2></div>
     <p>Filter by status, type and budget. Every project shows live construction progress so buyers always know where things stand.</p>
   </div>
   <div class="toolbar">
@@ -99,7 +99,7 @@
 <!-- 3. UNIT SELECTOR + FLOOR PLAN -->
 <section class="section dark" id="units">
   <div class="section-head">
-    <div><div class="eyebrow">Interactive Unit Selector</div><h2>Pick your exact floor, unit and view.</h2></div>
+    <div><h2>Pick your exact floor, unit and view.</h2></div>
     <p>Live availability for every flat. Click a unit to see its floor plan, carpet area, facing and price — then reserve it in one step.</p>
   </div>
   <div class="selector">
@@ -169,7 +169,7 @@
 <!-- 4. CALCULATORS -->
 <section class="section" id="calc">
   <div class="section-head">
-    <div><div class="eyebrow">Smart Tools</div><h2>Plan your budget before you visit.</h2></div>
+    <div><h2>Plan your budget before you visit.</h2></div>
     <p>A home-loan EMI calculator for apartment buyers and a construction cost estimator for clients building an independent house.</p>
   </div>
   <div class="calc-grid">
@@ -214,18 +214,18 @@
 <!-- 5. CONSTRUCTION PROGRESS -->
 <section class="section" id="progress" style="padding-top:24px">
   <div class="section-head">
-    <div><div class="eyebrow">Construction Tracker</div><h2>Watch your home rise — week by week.</h2></div>
+    <div><h2>Watch your home rise — week by week.</h2></div>
     <p>Milestones, dated site photos and a live camera build trust with buyers and reduce "what's the status?" calls to the sales team.</p>
   </div>
   <div class="prog-grid">
     <div class="timeline">
       <div class="overall"><div><small>Overall</small><b>68%</b></div><div><small>Possession</small><b>Dec 2027</b></div><div><small>Last update</small><b>2 days</b></div></div>
-      <div class="tl-item done"><div class="tl-dot">✓</div><div><h4>Land & approvals</h4><p>RERA, BBMP plan sanction, environment clearance</p></div><span class="when">Jan 2025</span></div>
-      <div class="tl-item done"><div class="tl-dot">✓</div><div><h4>Foundation & basement</h4><p>Raft foundation, 2 basement parking levels</p></div><span class="when">Jun 2025</span></div>
-      <div class="tl-item done"><div class="tl-dot">✓</div><div><h4>Superstructure</h4><p>All 14 slabs cast in Tower B</p></div><span class="when">Aug 2026</span></div>
-      <div class="tl-item now"><div class="tl-dot">4</div><div><h4>Masonry & MEP · in progress</h4><p>Blockwork 80%, plumbing 55%, electrical 40%</p></div><span class="when">Now</span></div>
-      <div class="tl-item next"><div class="tl-dot">5</div><div><h4>Finishing & amenities</h4><p>Flooring, paint, clubhouse, landscaping</p></div><span class="when">Q2 2027</span></div>
-      <div class="tl-item next"><div class="tl-dot">6</div><div><h4>Handover</h4><p>Occupancy certificate & key handover</p></div><span class="when">Dec 2027</span></div>
+      <div class="tl-item done"><div class="tl-dot">✓</div><div><h3>Land & approvals</h3><p>RERA, BBMP plan sanction, environment clearance</p></div><span class="when">Jan 2025</span></div>
+      <div class="tl-item done"><div class="tl-dot">✓</div><div><h3>Foundation & basement</h3><p>Raft foundation, 2 basement parking levels</p></div><span class="when">Jun 2025</span></div>
+      <div class="tl-item done"><div class="tl-dot">✓</div><div><h3>Superstructure</h3><p>All 14 slabs cast in Tower B</p></div><span class="when">Aug 2026</span></div>
+      <div class="tl-item now"><div class="tl-dot">4</div><div><h3>Masonry & MEP · in progress</h3><p>Blockwork 80%, plumbing 55%, electrical 40%</p></div><span class="when">Now</span></div>
+      <div class="tl-item next"><div class="tl-dot">5</div><div><h3>Finishing & amenities</h3><p>Flooring, paint, clubhouse, landscaping</p></div><span class="when">Q2 2027</span></div>
+      <div class="tl-item next"><div class="tl-dot">6</div><div><h3>Handover</h3><p>Occupancy certificate & key handover</p></div><span class="when">Dec 2027</span></div>
     </div>
     <div class="media-col">
       <div class="live" data-art='{"towers":3,"crane":true,"sky":["#d9c7a8","#8fa9c4"],"seed":5}'>
@@ -245,7 +245,7 @@
 <!-- 6. TESTIMONIALS + SITE VISIT BOOKING -->
 <section class="section dark" id="contact" style="position:relative">
   <div class="section-head">
-    <div><div class="eyebrow">Book a Site Visit</div><h2>See it in person. We'll pick you up.</h2></div>
+    <div><h2>See it in person. We'll pick you up.</h2></div>
     <p>Free cab pickup for site visits. Choose a slot and a relationship manager will confirm on WhatsApp within 15 minutes.</p>
   </div>
   <div class="contact-grid">
@@ -290,7 +290,7 @@
   canvas.addEventListener("floorselect", (e) => {
     if (!e.detail) return;
     const avail = (e.detail.level * 7) % 6 || 1;
-    document.querySelector("#floorCard h4").textContent = `${e.detail.tower} · Floor ${e.detail.level}`;
+    document.querySelector("#floorCard .fc-title").textContent = `${e.detail.tower} · Floor ${e.detail.level}`;
     document.querySelector("#floorCard .gold").textContent = `${avail} of 6`;
   });
 
