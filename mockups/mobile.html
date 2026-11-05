@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Urbanstone Mobile</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="m-frame" id="mobile">
+  <header class="hero">
+    <nav class="nav">
+      <div class="logo"><div class="logo-mark">U</div>Urbanstone</div>
+      <div class="burger">☰</div>
+    </nav>
+    <div class="badge-pill"><span class="dot"></span>RERA registered · 25 years</div>
+    <h1>Homes engineered to last <em>generations.</em></h1>
+    <p class="lead">Explore every tower in 3D, pick your exact unit and track construction live.</p>
+    <div class="scene-wrap"><canvas id="scene"></canvas>
+      <div class="float-card fc-1" style="width:auto;top:14px;left:14px;padding:10px 12px">
+        <div class="fc-title" style="font-size:13px">Tower B · Floor 12</div><div class="row" style="margin:0"><span>Available</span><span class="gold">3 of 6</span></div>
+      </div>
+    </div>
+    <div class="hero-ctas"><a class="btn btn-gold">Explore Projects →</a><a class="btn btn-ghost">▶ Watch Walkthrough</a></div>
+    <div class="stats">
+      <div class="stat"><b>120+</b><span>Projects</span></div>
+      <div class="stat"><b>8,500</b><span>Families</span></div>
+      <div class="stat"><b>14M</b><span>Sq. ft.</span></div>
+    </div>
+  </header>
+  <div class="m-sticky"><a class="btn btn-outline">📞 Call</a><a class="btn btn-dark">WhatsApp</a><a class="btn btn-gold">Visit</a></div>
+</div>
+<script type="module">
+  import { mountScene } from "./scene.js";
+  mountScene(document.getElementById("scene"));
+</script>
+</body>
+</html>

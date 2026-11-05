@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Urbanstone Builders — Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- 1. HERO + 3D TOWER -->
+<header class="hero" id="hero">
+  <nav class="nav">
+    <div class="logo"><div class="logo-mark">U</div>Urbanstone</div>
+    <div class="nav-links">
+      <a class="active" href="#">Home</a><a href="#projects">Projects</a><a href="#units">Floor Plans</a>
+      <a href="#calc">Calculators</a><a href="#progress">Site Progress</a><a href="#contact">Contact</a>
+    </div>
+    <div class="nav-right"><span class="phone">+91 98765 43210</span><a class="btn btn-gold" href="#contact">Book Site Visit</a></div>
+  </nav>
+  <div class="hero-grid">
+    <div>
+      <div class="badge-pill"><span class="dot"></span>RERA registered · 25 years of trust</div>
+      <h1>Homes engineered<br/>to last <em>generations.</em></h1>
+      <p class="lead">Premium apartments and custom-built villas. Explore every tower in 3D, pick your exact floor and unit, and track construction live.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-gold" href="#projects">Explore Projects →</a>
+        <a class="btn btn-ghost" href="#">▶ Watch Walkthrough</a>
+      </div>
+      <div class="stats">
+        <div class="stat"><b>120+</b><span>Projects delivered</span></div>
+        <div class="stat"><b>8,500</b><span>Happy families</span></div>
+        <div class="stat"><b>14M</b><span>Sq. ft. constructed</span></div>
+      </div>
+    </div>
+    <div class="scene-wrap">
+      <canvas id="scene"></canvas>
+      <div class="float-card fc-1" id="floorCard">
+        <div class="fc-title">Tower B · Floor 12</div>
+        <div class="row"><span>Available units</span><span class="gold">3 of 6</span></div>
+        <div class="row"><span>Configurations</span><span>2 & 3 BHK</span></div>
+        <div class="row"><span>Starting at</span><span class="gold">₹ 92 L</span></div>
+      </div>
+      <div class="float-card fc-3"><div class="hint-icon">⟲</div>Drag to rotate · Click any floor</div>
+      <div class="float-card fc-2"><button class="on">Day</button><button>Night</button><button>Amenities</button></div>
+    </div>
+  </div>
+</header>
+
+<!-- 2. PROJECTS -->
+<section class="section" id="projects">
+  <div class="section-head">
+    <div><h2>Find the home that fits your life.</h2></div>
+    <p>Filter by status, type and budget. Every project shows live construction progress so buyers always know where things stand.</p>
+  </div>
+  <div class="toolbar">
+    <div class="filters">
+      <span class="chip on">All</span><span class="chip">Ongoing</span><span class="chip">Ready to move</span><span class="chip">Upcoming</span>
+      <span class="chip">Apartments</span><span class="chip">Villas</span>
+    </div>
+    <div class="search">⌕ Search by location or project</div>
+  </div>
+  <div class="cards">
+    <article class="card">
+      <div class="card-media site3d-card"><canvas id="cardSite" aria-label="Animated 3D model of the building under construction"></canvas><span class="status ongoing">● Under construction</span><span class="fav">♡</span><span class="badge-3d">3D</span></div>
+      <div class="card-body">
+        <h3>Urbanstone Skyline</h3><div class="loc">📍 Whitefield, Bengaluru</div>
+        <div class="specs"><span class="spec">2 & 3 BHK</span><span class="spec">1,150–1,820 sq ft</span><span class="spec">3 Towers</span></div>
+        <div class="progress-label"><span>Construction progress</span><b>68%</b></div>
+        <div class="bar"><i style="width:68%"></i></div>
+        <div class="card-foot"><div class="price"><small>Starting from</small><b>₹ 92 L</b></div><span class="link">View details →</span></div>
+      </div>
+    </article>
+    <article class="card">
+      <div class="card-media" data-art='{"villa":true,"sky":["#fde3c0","#9cc3e6"],"seed":7}'><span class="status done">● Ready to move</span><span class="fav">♡</span></div>
+      <div class="card-body">
+        <h3>Palm Grove Villas</h3><div class="loc">📍 Sarjapur Road, Bengaluru</div>
+        <div class="specs"><span class="spec">4 BHK Villas</span><span class="spec">3,200 sq ft</span><span class="spec">Private pool</span></div>
+        <div class="progress-label"><span>Construction progress</span><b>100%</b></div>
+        <div class="bar"><i style="width:100%"></i></div>
+        <div class="card-foot"><div class="price"><small>Starting from</small><b>₹ 2.4 Cr</b></div><span class="link">View details →</span></div>
+      </div>
+    </article>
+    <article class="card">
+      <div class="card-media" data-art='{"towers":2,"sky":["#e9b98a","#4d6f96"],"seed":11}'><span class="status soon">● Launching soon</span><span class="fav">♡</span></div>
+      <div class="card-body">
+        <h3>The Meridian</h3><div class="loc">📍 Hebbal, Bengaluru</div>
+        <div class="specs"><span class="spec">3 & 4 BHK</span><span class="spec">1,900–2,600 sq ft</span><span class="spec">Pre-launch offer</span></div>
+        <div class="progress-label"><span>Approvals</span><b>Pending RERA</b></div>
+        <div class="bar"><i style="width:12%"></i></div>
+        <div class="card-foot"><div class="price"><small>Expected from</small><b>₹ 1.6 Cr</b></div><span class="link">Register interest →</span></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- 3. UNIT SELECTOR + FLOOR PLAN -->
+<section class="section dark" id="units">
+  <div class="section-head">
+    <div><h2>Pick your exact floor, unit and view.</h2></div>
+    <p>Live availability for every flat. Click a unit to see its floor plan, carpet area, facing and price — then reserve it in one step.</p>
+  </div>
+  <div class="selector">
+    <div class="panel">
+      <div class="tabs"><span class="tab">Tower A</span><span class="tab on">Tower B</span><span class="tab">Tower C</span></div>
+      <div class="legend"><span><i style="background:#2f9e6a"></i>Available</span><span><i style="background:#f0ad4e"></i>On hold</span><span><i style="background:#3a4658"></i>Sold</span></div>
+      <div class="floors" id="floors"></div>
+    </div>
+    <div class="panel plan-panel">
+      <div>
+        <div class="plan-svg">
+          <svg viewBox="0 0 460 320" font-family="Manrope" font-size="11" fill="#2a3749">
+            <g fill="#fff" stroke="#2a3749" stroke-width="4">
+              <rect x="2" y="2" width="456" height="316" fill="#fbf9f5"/>
+              <rect x="2" y="2" width="160" height="140" fill="#eef3fa"/>
+              <rect x="162" y="2" width="68" height="70" fill="#e6f0ef"/>
+              <rect x="162" y="72" width="68" height="70" fill="#f4efe6"/>
+              <rect x="230" y="2" width="120" height="140" fill="#eef3fa"/>
+              <rect x="350" y="2" width="108" height="140" fill="#eef3fa"/>
+              <rect x="2" y="142" width="258" height="176" fill="#fff6e6"/>
+              <rect x="260" y="142" width="110" height="98" fill="#f3efe9"/>
+              <rect x="260" y="240" width="110" height="78" fill="#e6f0ef"/>
+              <rect x="370" y="142" width="88" height="176" fill="#e9f3e4"/>
+            </g>
+            <g stroke="#fbf9f5" stroke-width="6">
+              <line x1="120" y1="142" x2="150" y2="142"/><line x1="240" y1="142" x2="270" y2="142"/>
+              <line x1="380" y1="142" x2="410" y2="142"/><line x1="370" y1="190" x2="370" y2="230"/>
+              <line x1="190" y1="72" x2="215" y2="72"/><line x1="260" y1="270" x2="260" y2="295"/>
+            </g>
+            <g fill="none" stroke="#9aa6b8" stroke-width="1.2">
+              <path d="M120 142 A30 30 0 0 1 150 112"/><path d="M240 142 A30 30 0 0 1 270 112"/><path d="M380 142 A30 30 0 0 1 410 112"/>
+            </g>
+            <g font-weight="700" font-size="12">
+              <text x="40" y="68">Master Bed</text><text x="250" y="68">Bedroom 2</text><text x="368" y="68">Bedroom 3</text>
+              <text x="70" y="226">Living &amp; Dining</text><text x="288" y="192">Kitchen</text><text x="292" y="282">Bath 2</text>
+              <text x="178" y="40">Bath 1</text><text x="172" y="110">Wardrobe</text><text x="384" y="232">Balcony</text>
+            </g>
+            <g fill="#6b7280">
+              <text x="48" y="84">14' × 12'</text><text x="262" y="84">11' × 12'</text><text x="378" y="84">10' × 12'</text>
+              <text x="92" y="242">22' × 15'</text><text x="292" y="208">10' × 9'</text><text x="392" y="248">8' × 16'</text>
+            </g>
+            <g transform="translate(420 290)"><circle r="14" fill="#fff" stroke="#2a3749"/><path d="M0 -10 L5 4 L0 1 L-5 4 Z" fill="#e0a43a"/><text x="-3" y="-17" font-size="9" font-weight="700">N</text></g>
+          </svg>
+        </div>
+        <div class="view-toggle"><span class="on">2D Plan</span><span>3D Walkthrough</span><span>360° Balcony View</span><span>Compare</span></div>
+      </div>
+      <div class="unit-info">
+        <h3>Unit B-1204</h3>
+        <div class="sub">3 BHK · East facing · Corner unit</div>
+        <div class="kv">
+          <div><small>Carpet area</small><b>1,420 sq ft</b></div>
+          <div><small>Super built-up</small><b>1,820 sq ft</b></div>
+          <div><small>Floor</small><b>12 of 14</b></div>
+          <div><small>Parking</small><b>2 covered</b></div>
+        </div>
+        <div class="big-price">₹ 1.28 Cr</div>
+        <small>All-inclusive · ₹7,030 / sq ft · EMI from ₹ 98,400/mo</small>
+        <div class="stack">
+          <a class="btn btn-gold" style="justify-content:center">Reserve this unit</a>
+          <a class="btn btn-ghost" style="justify-content:center">⤓ Download brochure & plan</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. CALCULATORS -->
+<section class="section" id="calc">
+  <div class="section-head">
+    <div><h2>Plan your budget before you visit.</h2></div>
+    <p>A home-loan EMI calculator for apartment buyers and a construction cost estimator for clients building an independent house.</p>
+  </div>
+  <div class="calc-grid">
+    <div class="calc">
+      <h3>Home Loan EMI Calculator</h3><div class="sub">Drag the sliders — results update instantly.</div>
+      <div class="calc-body">
+        <div>
+          <div class="field"><div class="field-top"><span>Loan amount</span><b id="vAmt"></b></div><input id="amt" type="range" min="10" max="300" value="95"/><div class="range-ends"><span>₹10 L</span><span>₹3 Cr</span></div></div>
+          <div class="field"><div class="field-top"><span>Interest rate</span><b id="vRate"></b></div><input id="rate" type="range" min="6" max="14" step="0.1" value="8.5"/><div class="range-ends"><span>6%</span><span>14%</span></div></div>
+          <div class="field"><div class="field-top"><span>Tenure</span><b id="vYrs"></b></div><input id="yrs" type="range" min="5" max="30" value="20"/><div class="range-ends"><span>5 yrs</span><span>30 yrs</span></div></div>
+        </div>
+        <div class="donut-wrap">
+          <svg width="190" height="190" viewBox="0 0 42 42">
+            <circle cx="21" cy="21" r="15.9" fill="none" stroke="#2a3749" stroke-width="5"/>
+            <circle id="arc" cx="21" cy="21" r="15.9" fill="none" stroke="#e0a43a" stroke-width="5" stroke-dasharray="50 50" stroke-dashoffset="25" stroke-linecap="round"/>
+          </svg>
+          <div class="emi" id="emi"></div><small>Monthly EMI</small>
+          <div class="split"><span><i style="background:#e0a43a"></i>Principal <b id="pPct"></b></span><span><i style="background:#2a3749"></i>Interest <b id="iPct"></b></span></div>
+        </div>
+      </div>
+    </div>
+    <div class="calc">
+      <h3>House Construction Estimator</h3><div class="sub">For clients building on their own plot.</div>
+      <div class="field"><div class="field-top"><span>Built-up area</span><b>2,400 sq ft</b></div><input type="range" min="600" max="6000" value="2400" style="--p:33%"/></div>
+      <div class="tiers">
+        <div class="tier"><b>Standard</b><span>₹1,850 / sq ft</span></div>
+        <div class="tier on"><b>Premium</b><span>₹2,450 / sq ft</span></div>
+        <div class="tier"><b>Luxury</b><span>₹3,400 / sq ft</span></div>
+      </div>
+      <div class="breakdown">
+        <div class="bd-row"><span>Structure</span><div class="bar"><i style="width:40%"></i></div><b>₹23.5 L</b></div>
+        <div class="bd-row"><span>Finishing</span><div class="bar"><i style="width:25%"></i></div><b>₹14.7 L</b></div>
+        <div class="bd-row"><span>Electrical & plumbing</span><div class="bar"><i style="width:15%"></i></div><b>₹8.8 L</b></div>
+        <div class="bd-row"><span>Labour</span><div class="bar"><i style="width:15%"></i></div><b>₹8.8 L</b></div>
+        <div class="bd-row"><span>Approvals</span><div class="bar"><i style="width:5%"></i></div><b>₹2.9 L</b></div>
+      </div>
+      <div class="estimate"><div><small>Estimated total · ~11 months</small><b>₹ 58.8 L</b></div><a class="btn btn-gold">Get detailed quote</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. CONSTRUCTION PROGRESS -->
+<section class="section" id="progress" style="padding-top:24px">
+  <div class="section-head">
+    <div><h2>Watch your home rise — week by week.</h2></div>
+    <p>Milestones, dated site photos and an animated 3D model build trust with buyers and reduce "what's the status?" calls to the sales team.</p>
+  </div>
+  <div class="prog-grid">
+    <div class="timeline">
+      <div class="overall"><div><small>Overall</small><b>68%</b></div><div><small>Possession</small><b>Dec 2027</b></div><div><small>Last update</small><b>2 days</b></div></div>
+      <div tabindex="0" role="button" data-p="0.08" class="tl-item done"><div class="tl-dot">✓</div><div><h3>Land & approvals</h3><p>RERA, BBMP plan sanction, environment clearance</p></div><span class="when">Jan 2025</span></div>
+      <div tabindex="0" role="button" data-p="0.22" class="tl-item done"><div class="tl-dot">✓</div><div><h3>Foundation & basement</h3><p>Raft foundation, 2 basement parking levels</p></div><span class="when">Jun 2025</span></div>
+      <div tabindex="0" role="button" data-p="0.70" class="tl-item done"><div class="tl-dot">✓</div><div><h3>Superstructure</h3><p>All 14 slabs cast in Tower B</p></div><span class="when">Aug 2026</span></div>
+      <div tabindex="0" role="button" data-p="0.84" class="tl-item now"><div class="tl-dot">4</div><div><h3>Masonry & MEP · in progress</h3><p>Blockwork 80%, plumbing 55%, electrical 40%</p></div><span class="when">Now</span></div>
+      <div tabindex="0" role="button" data-p="0.95" class="tl-item next"><div class="tl-dot">5</div><div><h3>Finishing & amenities</h3><p>Flooring, paint, clubhouse, landscaping</p></div><span class="when">Q2 2027</span></div>
+      <div tabindex="0" role="button" data-p="1" class="tl-item next"><div class="tl-dot">6</div><div><h3>Handover</h3><p>Occupancy certificate & key handover</p></div><span class="when">Dec 2027</span></div>
+    </div>
+    <div class="media-col">
+      <div class="site3d">
+        <canvas id="site3d" aria-label="Interactive 3D construction model of Tower B"></canvas>
+        <span class="site-tag">3D construction model · Tower B</span>
+        <div class="site-stage"><small>Showing stage</small><b id="stageName">Masonry & MEP</b><span id="stagePct">Stage 4 of 6</span></div>
+        <div class="site-controls">
+          <button class="replay" id="replay" type="button">↻ Replay build</button>
+          <label class="scrub"><span>Drag to travel through time</span><input id="scrub" type="range" min="0" max="100" value="84"/></label>
+          <span class="site-hint">Drag to rotate · Scroll to zoom</span>
+        </div>
+      </div>
+      <div class="thumbs">
+        <div class="thumb" data-art='{"towers":1,"crane":true,"seed":21}'><span>Oct 2026</span></div>
+        <div class="thumb" data-art='{"towers":2,"crane":true,"seed":22}'><span>Aug 2026</span></div>
+        <div class="thumb" data-art='{"towers":2,"seed":23,"sky":["#e7c9a0","#6f8fb2"]}'><span>May 2026</span></div>
+        <div class="thumb" data-art='{"towers":1,"seed":24,"sky":["#e2d3bc","#9bb2c9"]}'><span>Jan 2026</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. TESTIMONIALS + SITE VISIT BOOKING -->
+<section class="section dark" id="contact" style="position:relative">
+  <div class="section-head">
+    <div><h2>See it in person. We'll pick you up.</h2></div>
+    <p>Free cab pickup for site visits. Choose a slot and a relationship manager will confirm on WhatsApp within 15 minutes.</p>
+  </div>
+  <div class="contact-grid">
+    <div>
+      <div class="quote">
+        <div class="stars">★★★★★</div>
+        <p>"They handed over our villa two weeks early. The weekly photo updates meant we never had to chase anyone — we watched every wall go up from Dubai."</p>
+        <div class="who"><div class="avatar">RK</div><div><b>Ramesh & Kavya</b><small>Palm Grove Villas · Moved in 2025</small></div></div>
+      </div>
+      <div class="trust">
+        <div><b>RERA</b>Registered</div><div><b>ISO 9001</b>Certified</div><div><b>4.8 ★</b>Google rating</div><div><b>On-time</b>96% handovers</div>
+      </div>
+    </div>
+    <div class="form">
+      <h3>Schedule your visit</h3><div class="sub">Takes less than a minute.</div>
+      <div class="inputs">
+        <div class="input"><label>Full name</label>Priya Sharma</div>
+        <div class="input"><label>Phone</label>+91 ••••• ••210</div>
+        <div class="input"><label>Project</label>Urbanstone Skyline ▾</div>
+        <div class="input"><label>Budget</label>₹ 90 L – 1.3 Cr ▾</div>
+        <div class="input full"><label>Preferred date</label>Saturday, 8 Nov 2026</div>
+      </div>
+      <div class="slots"><span class="slot">10:00 AM</span><span class="slot on">11:30 AM</span><span class="slot">2:00 PM</span><span class="slot">4:30 PM</span><span class="slot">☐ Need cab pickup</span></div>
+      <a class="btn btn-dark" style="width:100%;justify-content:center">Confirm site visit →</a>
+    </div>
+  </div>
+  <div class="wa"><svg width="30" height="30" viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.3z"/></svg></div>
+</section>
+
+<script type="module">
+  import { mountScene } from "./scene.js";
+  import { buildingArt } from "./art.js";
+  import { mountConstruction, stageFor, STAGES } from "./construction.js";
+
+  // Illustrations
+  document.querySelectorAll("[data-art]").forEach((el) => {
+    el.insertAdjacentHTML("afterbegin", buildingArt(JSON.parse(el.dataset.art)));
+  });
+
+  // 3D scene + floor card
+  const canvas = document.getElementById("scene");
+  mountScene(canvas);
+  canvas.addEventListener("floorselect", (e) => {
+    if (!e.detail) return;
+    const avail = (e.detail.level * 7) % 6 || 1;
+    document.querySelector("#floorCard .fc-title").textContent = `${e.detail.tower} · Floor ${e.detail.level}`;
+    document.querySelector("#floorCard .gold").textContent = `${avail} of 6`;
+  });
+
+  // Unit availability grid (status: a = available, h = hold, b = booked)
+  const pattern = ["bbabab", "abhabb", "babbab", "bhbaab", "abbbab", "bbabhb", "babbba"];
+  document.getElementById("floors").innerHTML = pattern.map((row, i) => {
+    const floor = 14 - i;
+    const cells = [...row].map((s, j) => {
+      const sel = floor === 12 && j === 3;
+      return `<div class="unit ${sel ? "u-sel" : "u-" + s}">${floor}0${j + 1}</div>`;
+    }).join("");
+    return `<div class="floor-row"><span>Floor ${floor}</span>${cells}</div>`;
+  }).join("");
+
+  // Live EMI calculator
+  const $ = (id) => document.getElementById(id);
+  const inr = (n) => "₹ " + Math.round(n).toLocaleString("en-IN");
+  function paint(input) {
+    const p = ((input.value - input.min) / (input.max - input.min)) * 100;
+    input.style.setProperty("--p", p + "%");
+  }
+  function calc() {
+    const P = +$("amt").value * 1e5, r = +$("rate").value / 1200, n = +$("yrs").value * 12;
+    const emi = (P * r * (1 + r) ** n) / ((1 + r) ** n - 1);
+    const total = emi * n, principalPct = Math.round((P / total) * 100);
+    $("vAmt").textContent = "₹ " + $("amt").value + " L";
+    $("vRate").textContent = $("rate").value + " %";
+    $("vYrs").textContent = $("yrs").value + " yrs";
+    $("emi").textContent = inr(emi);
+    $("pPct").textContent = principalPct + "%";
+    $("iPct").textContent = 100 - principalPct + "%";
+    $("arc").setAttribute("stroke-dasharray", `${principalPct} ${100 - principalPct}`);
+    ["amt", "rate", "yrs"].forEach((id) => paint($(id)));
+  }
+  ["amt", "rate", "yrs"].forEach((id) => $(id).addEventListener("input", calc));
+  calc();
+
+  // Animated 3D construction site: small one in the project card, interactive one in the tracker
+  mountConstruction($("cardSite"), { progress: 0.84, interactive: false, radius: 36 });
+  const site = mountConstruction($("site3d"), { progress: 0.84 });
+  const items = [...document.querySelectorAll(".tl-item[data-p]")];
+  site.onProgress((p) => {
+    const stage = stageFor(p);
+    $("stageName").textContent = stage.name;
+    $("stagePct").textContent = `Stage ${STAGES.indexOf(stageFor(p)) + 1} of 6`;
+    if (document.activeElement !== $("scrub")) $("scrub").value = Math.round(p * 100);
+    paint($("scrub"));
+    items.forEach((el) => el.classList.toggle("viewing", stageFor(+el.dataset.p).name === stage.name));
+  });
+  items.forEach((el) => {
+    const go = () => site.setProgress(+el.dataset.p);
+    el.addEventListener("click", go);
+    el.addEventListener("keydown", (e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), go()));
+  });
+  $("scrub").addEventListener("input", (e) => site.jump(e.target.value / 100));
+  $("replay").addEventListener("click", () => site.replay());
+</script>
+</body>
+</html>

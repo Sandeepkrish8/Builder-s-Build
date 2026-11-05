@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Construction 3D Model</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>body { margin: 0; } .site3d { height: 100vh; border-radius: 0; box-shadow: none; }</style>
+</head>
+<body>
+  <div class="site3d">
+    <canvas id="site3d" aria-label="Interactive 3D construction model"></canvas>
+    <span class="site-tag">3D construction model · Tower B</span>
+    <div class="site-stage"><small>Showing stage</small><b id="stageName">Land & approvals</b><span id="stagePct">Stage 1 of 6</span></div>
+    <div class="site-controls">
+      <button class="replay" id="replay" type="button">↻ Replay build</button>
+      <label class="scrub"><span>Drag to travel through time</span><input id="scrub" type="range" min="0" max="100" value="0"/></label>
+      <span class="site-hint">Drag to rotate · Scroll to zoom</span>
+    </div>
+  </div>
+  <script type="module">
+    import { mountConstruction, stageFor, STAGES } from "./construction.js";
+    const $ = (id) => document.getElementById(id);
+    const params = new URLSearchParams(location.search);
+    const site = mountConstruction($("site3d"), { progress: +(params.get("p") ?? 1), speed: +(params.get("speed") ?? 0.12) });
+    const paint = (el) => el.style.setProperty("--p", el.value + "%");
+    site.onProgress((p) => {
+      $("stageName").textContent = stageFor(p).name;
+      $("stagePct").textContent = `Stage ${STAGES.indexOf(stageFor(p)) + 1} of 6`;
+      if (document.activeElement !== $("scrub")) { $("scrub").value = Math.round(p * 100); paint($("scrub")); }
+    });
+    $("scrub").addEventListener("input", (e) => { paint(e.target); site.jump(e.target.value / 100); });
+    $("replay").addEventListener("click", () => site.replay());
+  </script>
+</body>
+</html>
